@@ -1607,21 +1607,21 @@ What type of output?
 
 ```mermaid
 graph LR
-    X["Input x"] --> Z1["z¹ = W¹x + b¹"]
-    W1["W¹"] --> Z1
-    B1["b¹"] --> Z1
-    Z1 --> A1["a¹ = ReLU(z¹)"]
-    A1 --> Z2["z² = W²a¹ + b²"]
-    W2["W²"] --> Z2
-    B2["b²"] --> Z2
-    Z2 --> A2["a² = ReLU(z²)"]
-    A2 --> LOSS["L = CrossEntropy(Softmax(z²), y)"]
+    X["Input x"] --> Z1["z1 = W1·x + b1"]
+    W1["W1"] --> Z1
+    B1["b1"] --> Z1
+    Z1 --> A1["a1 = ReLU(z1)"]
+    A1 --> Z2["z2 = W2·a1 + b2"]
+    W2["W2"] --> Z2
+    B2["b2"] --> Z2
+    Z2 --> A2["a2 = ReLU(z2)"]
+    A2 --> LOSS["L = CrossEntropy(Softmax(z2), y)"]
     Y["y_true"] --> LOSS
 
-    LOSS -->|"∂L/∂z² = ŷ - y"| dZ2["δ²"]
-    dZ2 -->|"δ¹ = W²ᵀδ² ⊙ ReLU'(z¹)"| dZ1["δ¹"]
-    dZ2 -->|"∂L/∂W² = δ²(a¹)ᵀ"| dW2["▽W²"]
-    dZ1 -->|"∂L/∂W¹ = δ¹xᵀ"| dW1["▽W¹"]
+    LOSS -->|"dL/dz2 = y_hat - y"| dZ2["delta2"]
+    dZ2 -->|"delta1 = W2T·delta2 x ReLU-prime(z1)"| dZ1["delta1"]
+    dZ2 -->|"dL/dW2 = delta2 · a1T"| dW2["grad W2"]
+    dZ1 -->|"dL/dW1 = delta1 · xT"| dW1["grad W1"]
 
     style LOSS fill:#ff6b6b,color:#fff
     style dW1 fill:#51cf66,color:#fff
@@ -1984,19 +1984,19 @@ h = h  # No masking, no scaling needed (already compensated)
 
 ```mermaid
 graph TD
-    GD["Gradient Descent\n θ ← θ - η∇L"] --> SGD["SGD\n(stochastic)"]
-    GD --> BGD["Batch GD\n(full dataset)"]
-    SGD --> MOM["+ Momentum\n v ← μv - η∇L"]
-    MOM --> NAG["Nesterov (NAG)\n look-ahead gradient"]
-    SGD --> ADA["AdaGrad\n per-param LR"]
-    ADA --> RMSP["RMSprop\n exponential avg"]
-    RMSP --> ADAM["Adam\n 1st + 2nd moments"]
-    ADAM --> ADAMW["AdamW\n decoupled weight decay"]
-    ADAM --> AMSGRAD["AMSGrad\n max past variance"]
-    ADAM --> NADAM["NAdam\n Adam + Nesterov"]
-    GD --> NEWTON["Newton's Method\n H⁻¹∇L"]
-    NEWTON --> LBFGS["L-BFGS\n approx Hessian"]
-    NEWTON --> NATGRAD["Natural Gradient\n F⁻¹∇L"]
+    GD["Gradient Descent\ntheta = theta - lr x grad L"] --> SGD["SGD\nstochastic"]
+    GD --> BGD["Batch GD\nfull dataset"]
+    SGD --> MOM["Momentum\nv = mu·v - lr·grad L"]
+    MOM --> NAG["Nesterov NAG\nlook-ahead gradient"]
+    SGD --> ADA["AdaGrad\nper-param LR"]
+    ADA --> RMSP["RMSprop\nexponential moving avg"]
+    RMSP --> ADAM["Adam\n1st and 2nd moments"]
+    ADAM --> ADAMW["AdamW\ndecoupled weight decay"]
+    ADAM --> AMSGRAD["AMSGrad\nmax past variance"]
+    ADAM --> NADAM["NAdam\nAdam + Nesterov"]
+    GD --> NEWTON["Newtons Method\nH-inv · grad L"]
+    NEWTON --> LBFGS["L-BFGS\napprox Hessian"]
+    NEWTON --> NATGRAD["Natural Gradient\nF-inv · grad L"]
 
     style ADAM fill:#4dabf7,color:#fff
     style ADAMW fill:#339af0,color:#fff
@@ -2198,20 +2198,20 @@ graph TD
 
 ```mermaid
 flowchart TD
-    DATA["Raw Data\n(x, y pairs)"] --> PREP["Preprocessing\nNormalize, Augment"]
-    PREP --> BATCH["Mini-batch Sampler\nB = 32–256 samples"]
-    BATCH --> FWD["Forward Pass\nz = Wx+b, a = f(z)"]
-    FWD --> NORM["Normalization\nBatchNorm / LayerNorm"]
-    NORM --> DROP["Dropout\n(training only, p=0.5)"]
-    DROP --> LOSS["Loss Computation\nL = CrossEntropy(ŷ, y)"]
-    LOSS --> BWD["Backpropagation\nCompute ∂L/∂W for all layers"]
-    BWD --> CLIP["Gradient Clipping\n‖g‖ > T → g × T/‖g‖"]
-    CLIP --> OPT["Optimizer Step\nAdam: θ ← θ - η·m̂/√v̂"]
-    OPT --> SCHED["LR Scheduler\nCosine / Warmup-Decay"]
-    SCHED --> CHECK{"Converged?\nval_loss plateau"}
+    DATA["Raw Data\nx and y pairs"] --> PREP["Preprocessing\nNormalize and Augment"]
+    PREP --> BATCH["Mini-batch Sampler\nB = 32 to 256 samples"]
+    BATCH --> FWD["Forward Pass\nz = Wx + b, a = f(z)"]
+    FWD --> NORM["Normalization\nBatchNorm or LayerNorm"]
+    NORM --> DROP["Dropout\ntraining only, p = 0.5"]
+    DROP --> LOSS["Loss Computation\nL = CrossEntropy(y-hat, y)"]
+    LOSS --> BWD["Backpropagation\nCompute dL/dW for all layers"]
+    BWD --> CLIP["Gradient Clipping\nnorm(g) greater than T: scale down"]
+    CLIP --> OPT["Optimizer Step\nAdam: theta = theta - lr x m-hat / sqrt(v-hat)"]
+    OPT --> SCHED["LR Scheduler\nCosine or Warmup-Decay"]
+    SCHED --> CHECK{"Converged\nval loss plateau"}
     CHECK -->|No| BATCH
-    CHECK -->|Yes| EVAL["Evaluation\nTest set, metrics"]
-    EVAL --> DEPLOY["Deployment\nInference mode:\nno dropout, BN uses running stats"]
+    CHECK -->|Yes| EVAL["Evaluation\nTest set and metrics"]
+    EVAL --> DEPLOY["Deployment\nInference mode\nno dropout, BN uses running stats"]
 
     style LOSS fill:#ff6b6b,color:#fff
     style BWD fill:#ffa94d,color:#fff
