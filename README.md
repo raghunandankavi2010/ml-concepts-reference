@@ -26,6 +26,7 @@
 18. [Visual Guide: Dropout](#v5-dropout--removing-connections)
 19. [Visual Guide: Optimization Algorithms](#v6-optimization-algorithms--visual--mathematical-deep-dive)
 20. [Full Training Pipeline](#v7-putting-it-all-together--training-pipeline)
+21. [Companion Doc: Gradient Descent From Scratch (derivation + code)](./gradient_descent_from_scratch.md)
 
 ---
 
@@ -1192,6 +1193,8 @@ $$L_{\text{NSP}} = -\log p(\text{IsNext} | [CLS])$$
 ## 12. Optimization Methods
 
 ### 12.1 Gradient Descent Variants
+
+> For a full worked derivation of the update rule below (chain rule, step by step) plus a runnable NumPy implementation, see [`gradient_descent_from_scratch.md`](./gradient_descent_from_scratch.md).
 
 #### Batch Gradient Descent
 
